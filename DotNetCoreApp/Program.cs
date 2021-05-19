@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.Debug;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,8 +49,17 @@ namespace DotNetCoreApp
             host.Run();
         }
 
+        //To override the default set of logging providers added by Host.CreateDefaultBuilder, call ClearProviders and add the required logging providers
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    logging.AddConsole();
+                    logging.AddFilter("System", LogLevel.Debug)   //shows how to register filter rules in code
+                      .AddFilter<DebugLoggerProvider>("Microsoft", LogLevel.Information)
+                      .AddFilter<ConsoleLoggerProvider>("Microsoft", LogLevel.Trace);
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
